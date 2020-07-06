@@ -90,6 +90,19 @@ namespace NumberToLCD.Tests
                 line2 + Environment.NewLine +
                 line3);
         }
+
+        [Fact]
+        public void ShouldReturnAllDigits()
+        {
+            var expected =
+                           "    _  _     _  _  _  _  _ " + Environment.NewLine +
+                           "  | _| _||_||_ |_   ||_||_|" + Environment.NewLine +
+                           "  ||_  _|  | _||_|  ||_| _|";
+
+            var actual = _convertor.Convert(123456789);
+
+            actual.Should().Be(expected);
+        }
     }
 
     public class Digit
@@ -174,11 +187,7 @@ namespace NumberToLCD.Tests
     {
         public string Convert(int s)
         {
-            var digits = s.ToString();
-
-            var builder = new Digits();
-
-            builder = digits.Select(c => (c switch
+            return s.ToString().Select(c => (c switch
                 {
                     '0' => Digit.Zero,
                     '1' => Digit.One,
@@ -192,9 +201,8 @@ namespace NumberToLCD.Tests
                     '9' => Digit.Nine,
                     _ => throw null
                 }))
-                .Aggregate(builder, (current, stringDigit) => current + stringDigit);
-
-            return builder.ToString();
+                .Aggregate(new Digits(), (current, stringDigit) => current + stringDigit)
+                .ToString();
 
         }
     }
