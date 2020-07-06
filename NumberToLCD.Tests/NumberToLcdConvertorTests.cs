@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using FluentAssertions;
 using Xunit;
@@ -90,52 +92,82 @@ namespace NumberToLCD.Tests
         }
     }
 
-    public class StringDigits
+    public class Digit
     {
-        public static readonly string Zero = " _ " + Environment.NewLine +
-                                             "| |" + Environment.NewLine +
-                                             "|_|";
+        public string[] Lines { get; }
 
-        public static readonly string One = "   " + Environment.NewLine +
-                                            "  |" + Environment.NewLine +
-                                            "  |";
+        public static readonly Digit Zero = new Digit(" _ ",
+                                                      "| |",
+                                                      "|_|");
 
-        public static readonly string Two = " _ " + Environment.NewLine +
-                                            " _|" + Environment.NewLine +
-                                            "|_ ";
+        public static readonly Digit One = new Digit("   ",
+                                                     "  |",
+                                                     "  |");
 
-        public static readonly string Three = " _ " + Environment.NewLine +
-                                              " _|" + Environment.NewLine +
-                                              " _|";
+        public static readonly Digit Two = new Digit(" _ " ,
+                                                     " _|" ,
+                                                     "|_ ");
 
-        public static readonly string Four = "   " + Environment.NewLine +
-                                             "|_|" + Environment.NewLine +
-                                             "  |";
+        public static readonly Digit Three = new Digit(" _ " ,
+                                                       " _|" ,
+                                                       " _|");
 
-        public static readonly string Five =" _ "  + Environment.NewLine +
-                                            "|_ " + Environment.NewLine +
-                                            " _|"; 
+        public static readonly Digit Four = new Digit("   " ,
+                                                      "|_|" ,
+                                                      "  |");
 
-        public static readonly string Six = " _ "  + Environment.NewLine +
-                                            "|_ " + Environment.NewLine +
-                                            "|_|"; 
+        public static readonly Digit Five = new Digit(" _ "  ,
+                                                      "|_ " ,
+                                                      " _|"); 
 
-        public static readonly string Seven = " _ "  + Environment.NewLine +
-                                              "  |" + Environment.NewLine +
-                                              "  |"; 
+        public static readonly Digit Six = new Digit(" _ "  ,
+                                                     "|_ " ,
+                                                     "|_|"); 
 
-        public static readonly string Eight = " _ "  + Environment.NewLine +
-                                              "|_|" + Environment.NewLine +
-                                              "|_|"; 
+        public static readonly Digit Seven = new Digit(" _ "  ,
+                                                       "  |" ,
+                                                       "  |"); 
 
-        public static readonly string Nine =  " _ "  + Environment.NewLine +
-                                              "|_|" + Environment.NewLine +
-                                              " _|"; 
-        //public static readonly string Zero = "abdefg";
-        //public static readonly string One = "dg";
-        //public static readonly string Two = "adcef";
-        //public static readonly string Three = "adcgf";
-        //public static readonly string Four = "bcdg"
+        public static readonly Digit Eight = new Digit(" _ "  ,
+                                                       "|_|" ,
+                                                       "|_|"); 
+
+        public static readonly Digit Nine = new Digit(" _ "  ,
+                                                      "|_|" ,
+                                                      " _|");
+
+        private Digit(params string[] lines)
+        {
+            Lines = lines;
+        }
+    }
+
+    public class Digits
+    {
+        private readonly List<Digit> _digits = new List<Digit>();
+
+        public static Digits operator +(Digits a, Digit b)
+        {
+            a._digits.Add(b);
+            return a;
+        }
+
+
+        public override string ToString()
+        {
+            var line1 = new StringBuilder();
+            var line2 = new StringBuilder();
+            var line3 = new StringBuilder();
+
+            foreach (var digit in _digits)
+            {
+                line1.Append(digit.Lines[0]);
+                line2.Append(digit.Lines[1]);
+                line3.Append(digit.Lines[2]);
+            }
+
+            return line1 + Environment.NewLine + line2 + Environment.NewLine + line3;
+        }
     }
 
     public class NumberToLcdConvertor
@@ -143,34 +175,27 @@ namespace NumberToLCD.Tests
         public string Convert(int s)
         {
             var digits = s.ToString();
-            var line1 = new StringBuilder();
-            var line2 = new StringBuilder();
-            var line3 = new StringBuilder();
 
-            foreach (var c in digits)
-            {
-                var stringDigit = (c switch
+            var builder = new Digits();
+
+            builder = digits.Select(c => (c switch
                 {
-                    '0' => StringDigits.Zero,
-                    '1' => StringDigits.One,
-                    '2' => StringDigits.Two,
-                    '3' => StringDigits.Three,
-                    '4' => StringDigits.Four,
-                    '5' => StringDigits.Five,
-                    '6' => StringDigits.Six,
-                    '7' => StringDigits.Seven,
-                    '8' => StringDigits.Eight,
-                    '9' => StringDigits.Nine,
+                    '0' => Digit.Zero,
+                    '1' => Digit.One,
+                    '2' => Digit.Two,
+                    '3' => Digit.Three,
+                    '4' => Digit.Four,
+                    '5' => Digit.Five,
+                    '6' => Digit.Six,
+                    '7' => Digit.Seven,
+                    '8' => Digit.Eight,
+                    '9' => Digit.Nine,
                     _ => throw null
-                }).Split(Environment.NewLine);
+                }))
+                .Aggregate(builder, (current, stringDigit) => current + stringDigit);
 
-                line1.Append(stringDigit[0]);
-                line2.Append(stringDigit[1]);
-                line3.Append(stringDigit[2]);
-            }
-                
-            return line1 + Environment.NewLine + line2 + Environment.NewLine + line3;
-            
+            return builder.ToString();
+
         }
     }
 }
